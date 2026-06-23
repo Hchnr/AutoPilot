@@ -1,0 +1,12 @@
+[
+  {
+    "action": "scale_replicas",
+    "field": "replicas",
+    "from_value": 1,
+    "to_value": 2,
+    "reason": "TTFT SLO violated for 4 consecutive windows, scaling up to handle load",
+    "confidence": 0.87,
+    "risk_level": "low",
+    "requires_restart": false
+  }
+]

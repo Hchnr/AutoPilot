@@ -1,0 +1,25 @@
+backend: vllm
+confidence: 1.0
+enable_chunked_prefill: true
+enable_prefix_cache: true
+estimated_capacity_headroom: 0.9651309523809525
+estimated_hourly_cost: 14.0
+estimated_p95_itl_ms: 16.0
+estimated_p95_ttft_ms: 604.968
+estimated_peak_memory_per_gpu_gb: 21.76624412536621
+gpu_pool: h800-sxm
+gpu_type: H800-80GB
+kv_cache_dtype: auto
+max_num_batched_tokens: 16384
+max_num_seqs: 16
+pipeline_parallel: 1
+precision: fp8
+prefill_chunk_size: 2048
+rationale:
+  pp: PP=1，模型规模在 TP 切分后单卡可容纳，无需流水线
+  precision: 使用 FP8 量化，显存减半且质量损失极小(~0.5%)
+  prefix_cache: 启用 Prefix Cache，流量 prefix 复用率 99%，可显著减少重复 prefill 计算
+  tp: TP=4，将模型切分到 4 张 GPU，减少单卡显存压力；NVLink 互联支持大 TP 的高效通信
+replicas: 1
+score: 0.8204461261487052
+tensor_parallel: 4

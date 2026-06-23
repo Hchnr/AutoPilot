@@ -1,7 +1,10 @@
 .DS_Store
 
-# Project outputs
-outputs/
+# Project outputs: ignore everything inside except example scenarios
+outputs/*
+!outputs/scenario_1/
+!outputs/scenario_2/
+!outputs/scenario_3/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
