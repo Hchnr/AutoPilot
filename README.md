@@ -191,6 +191,11 @@ backends:
 
 详见：[docs/extending.md](docs/extending.md)
 
+## 设计分析
+
+- [三场景方案分析](docs/scenario-analysis.md) — 各场景输入差异、方案选择逻辑、Reconcile 行为解读
+- [关键考量点分析](docs/key-considerations.md) — 12 项核心设计决策的实现方式和验证方法
+
 ## 测试
 
 ```bash
