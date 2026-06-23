@@ -195,13 +195,17 @@ backends:
 
 ```bash
 pytest tests/ -v --cov=autopilot
-# 59 个测试，93% 覆盖率
+# 71 个测试，93% 覆盖率
 ```
+
+覆盖范围：配置合法性、GPU 约束、显存估算、TP/PP/Replica 资源计算、SLO 判断、方案排序、Profile 降级、连续窗口判断、Cooldown 防震荡、高风险操作识别。
 
 包含三个端到端场景：
 - 场景一：客服 Chat（高 prefix 复用、TTFT 敏感）
 - 场景二：长文本生成（decode 密集、低 prefix 复用）
 - 场景三：混合流量（Chat + RAG + 长文本、成本敏感）
+
+详见：[docs/testing.md](docs/testing.md)
 
 ## 项目结构
 

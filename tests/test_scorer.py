@@ -126,3 +126,50 @@ class TestScorer:
         assert len(ranked) > 0
         assert "tp" in ranked[0].rationale
         assert "precision" in ranked[0].rationale
+
+    def test_slo_filters_violating_plans(self, profiles, cluster, workload):
+        """验证: 不满足 SLO 的方案被过滤掉."""
+        # 极严格 SLO：TTFT 50ms, ITL 5ms — 几乎不可能满足
+        strict_slo = SloConfig(
+            objective=SloObjective(primary="minimize_hourly_cost"),
+            constraints=SloConstraints(p95_ttft_ms=50, p95_itl_ms=5, minimum_capacity_headroom=0.0),
+        )
+        profile_lookup = ProfileLookup(profiles=profiles)
+        candidates = [_make_plan(replicas=1), _make_plan(replicas=2)]
+        ranked = score_and_rank(candidates, workload, strict_slo, profile_lookup, cluster)
+        # 严格 SLO 下应过滤大部分或全部方案
+        assert len(ranked) < len(candidates)
+
+    def test_goodput_ranking_differs_from_cost(self, profiles, cluster):
+        """验证: maximize_goodput 和 minimize_cost 目标下排序可能不同."""
+        cost_slo = SloConfig(
+            objective=SloObjective(primary="minimize_hourly_cost"),
+            constraints=SloConstraints(p95_ttft_ms=3000, p95_itl_ms=200, minimum_capacity_headroom=0.0),
+        )
+        goodput_slo = SloConfig(
+            objective=SloObjective(primary="maximize_goodput"),
+            constraints=SloConstraints(p95_ttft_ms=3000, p95_itl_ms=200, minimum_capacity_headroom=0.0),
+        )
+        workload = WorkloadSummary(
+            input_tokens_p50=500, input_tokens_p90=1000, input_tokens_p99=1500,
+            output_tokens_p50=100, output_tokens_p90=200, output_tokens_p99=300,
+            avg_rps=2.0, peak_rps=3.0, burst_ratio=1.5,
+            prefix_reuse_rate=0.0, total_requests=100, requests_with_prefix=0,
+            estimated_concurrency=2.0,
+            is_prefill_heavy=False, is_latency_sensitive=True,
+            has_time_pattern=False,
+        )
+        profile_lookup = ProfileLookup(profiles=profiles)
+        candidates = [_make_plan(replicas=1), _make_plan(replicas=2)]
+
+        ranked_cost = score_and_rank(candidates, workload, cost_slo, profile_lookup, cluster)
+        ranked_goodput = score_and_rank(candidates, workload, goodput_slo, profile_lookup, cluster)
+
+        if len(ranked_cost) >= 2 and len(ranked_goodput) >= 2:
+            # minimize_cost 应更偏好 1 副本（便宜）
+            assert ranked_cost[0].estimated_hourly_cost <= ranked_cost[1].estimated_hourly_cost
+            # goodput 目标下，2 副本分数差距应不大于 cost 目标下
+            # （因为 goodput 更看重余量和延迟，降低了成本权重）
+            cost_gap = ranked_cost[0].score - ranked_cost[1].score
+            goodput_gap = ranked_goodput[0].score - ranked_goodput[1].score
+            assert goodput_gap <= cost_gap

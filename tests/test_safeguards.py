@@ -90,3 +90,24 @@ class TestSafeguards:
         SafeguardEngine.classify_risk(action)
         assert action.risk_level == "medium"
         assert action.requires_restart is False
+
+    def test_classify_risk_change_gpu_pool(self):
+        """验证: 切换 GPU 池是高风险."""
+        action = _make_action(action="change_gpu_pool")
+        SafeguardEngine.classify_risk(action)
+        assert action.risk_level == "high"
+        assert action.requires_restart is True
+
+    def test_classify_risk_change_tp(self):
+        """验证: 修改 TP 是高风险."""
+        action = _make_action(action="change_tp")
+        SafeguardEngine.classify_risk(action)
+        assert action.risk_level == "high"
+        assert action.requires_restart is True
+
+    def test_classify_risk_change_kv_cache(self):
+        """验证: 修改 KV cache 精度是高风险（需要重启）."""
+        action = _make_action(action="change_kv_cache_dtype")
+        SafeguardEngine.classify_risk(action)
+        assert action.risk_level == "high"
+        assert action.requires_restart is True

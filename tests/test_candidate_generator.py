@@ -148,3 +148,43 @@ class TestCandidateGenerator:
         candidates_low = generate_candidates(model, cluster, backends, low_prefix, estimator, slo)
         all_no_cache = all(not c.enable_prefix_cache for c in candidates_low)
         assert all_no_cache, "低复用场景不应启用 prefix cache"
+
+    def test_total_gpu_count(self, model, cluster, backends, workload, slo):
+        """验证: TP × PP × Replicas = 方案使用的总 GPU 数."""
+        estimator = MemoryEstimator(model=model)
+        candidates = generate_candidates(model, cluster, backends, workload, estimator, slo)
+        for c in candidates:
+            total_gpus = c.tensor_parallel * c.pipeline_parallel * c.replicas
+            assert total_gpus >= 1
+            # 总 GPU 数不能超过对应资源池可用数
+            pool = next(p for p in cluster.gpu_pools if p.id == c.gpu_pool)
+            assert total_gpus <= pool.count
+
+    def test_replicas_scale_with_load(self, model, cluster, backends, slo):
+        """验证: 更高流量需要更多副本."""
+        estimator = MemoryEstimator(model=model)
+
+        low_load = WorkloadSummary(
+            input_tokens_p50=1000, input_tokens_p90=2000, input_tokens_p99=3000,
+            output_tokens_p50=200, output_tokens_p90=400, output_tokens_p99=600,
+            avg_rps=2.0, peak_rps=3.0, burst_ratio=1.5,
+            prefix_reuse_rate=0.0, total_requests=100, requests_with_prefix=0,
+            estimated_concurrency=2.0,
+            is_prefill_heavy=True, is_latency_sensitive=True,
+            has_time_pattern=False,
+        )
+        high_load = WorkloadSummary(
+            input_tokens_p50=1000, input_tokens_p90=2000, input_tokens_p99=3000,
+            output_tokens_p50=200, output_tokens_p90=400, output_tokens_p99=600,
+            avg_rps=50.0, peak_rps=80.0, burst_ratio=1.6,
+            prefix_reuse_rate=0.0, total_requests=3000, requests_with_prefix=0,
+            estimated_concurrency=40.0,
+            is_prefill_heavy=True, is_latency_sensitive=True,
+            has_time_pattern=False,
+        )
+        candidates_low = generate_candidates(model, cluster, backends, low_load, estimator, slo)
+        candidates_high = generate_candidates(model, cluster, backends, high_load, estimator, slo)
+
+        max_replicas_low = max(c.replicas for c in candidates_low) if candidates_low else 1
+        max_replicas_high = max(c.replicas for c in candidates_high) if candidates_high else 1
+        assert max_replicas_high >= max_replicas_low

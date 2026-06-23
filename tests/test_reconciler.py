@@ -128,3 +128,55 @@ class TestReconciler:
         analysis = analyze_telemetry([])
         actions = decide_actions(current_plan, [], analysis)
         assert actions == []
+
+    def test_exactly_two_windows_no_action(self, current_plan):
+        """验证: 恰好 2 个窗口违反（未达 3 窗口阈值）不触发操作."""
+        telemetry = _make_telemetry(count=2, ttft=920)
+        analysis = analyze_telemetry(telemetry)
+        actions = decide_actions(current_plan, telemetry, analysis)
+        assert len(actions) == 0
+
+    def test_exactly_three_windows_triggers(self, current_plan):
+        """验证: 恰好 3 个连续窗口违反触发操作."""
+        telemetry = _make_telemetry(count=3, ttft=920)
+        analysis = analyze_telemetry(telemetry)
+        actions = decide_actions(current_plan, telemetry, analysis)
+        assert len(actions) > 0
+
+    def test_four_windows_low_util_no_scale_down(self, current_plan):
+        """验证: 4 个窗口低利用率（未达 5 窗口阈值）不触发缩容."""
+        telemetry = _make_telemetry(count=4, gpu_util=0.15)
+        analysis = analyze_telemetry(telemetry)
+        actions = decide_actions(current_plan, telemetry, analysis)
+        scale_downs = [a for a in actions if a.action == "scale_replicas" and a.to_value < current_plan.replicas]
+        assert len(scale_downs) == 0
+
+    def test_five_windows_low_util_triggers_scale_down(self, current_plan):
+        """验证: 恰好 5 个窗口低利用率触发缩容."""
+        telemetry = _make_telemetry(count=5, gpu_util=0.15)
+        analysis = analyze_telemetry(telemetry)
+        actions = decide_actions(current_plan, telemetry, analysis)
+        scale_downs = [a for a in actions if a.action == "scale_replicas" and a.to_value < current_plan.replicas]
+        assert len(scale_downs) > 0
+
+    def test_interrupted_violation_resets_counter(self, current_plan):
+        """验证: 中间插入正常窗口会重置连续计数."""
+        # 2 个违反 + 1 个正常 + 2 个违反 = 不触发（最长连续仅 2）
+        telemetry = [
+            *_make_telemetry(count=2, ttft=920),
+            TelemetryRecord(
+                timestamp="2026-06-20T10:10:00Z",
+                request_rate=10.0, queue_depth=5,
+                p95_ttft_ms=500, p95_itl_ms=30,  # 正常
+                gpu_utilization=0.6, kv_cache_utilization=0.7,
+            ),
+            *[TelemetryRecord(
+                timestamp=f"2026-06-20T10:{15+i*5}:00Z",
+                request_rate=10.0, queue_depth=5,
+                p95_ttft_ms=920, p95_itl_ms=30,
+                gpu_utilization=0.6, kv_cache_utilization=0.7,
+            ) for i in range(2)],
+        ]
+        analysis = analyze_telemetry(telemetry)
+        actions = decide_actions(current_plan, telemetry, analysis)
+        assert len(actions) == 0
