@@ -78,7 +78,9 @@ def generate_candidates(
         for backend_name, backend in backends.backends.items():
             # 交集精度
             common_precisions = [
-                p for p in model.supported_precisions if p in backend.supported_precisions
+                p
+                for p in model.supported_precisions
+                if p in backend.supported_precisions
             ]
 
             for precision in common_precisions:
@@ -104,17 +106,25 @@ def generate_candidates(
                                 quality_retention = 0.995
                             if kv_dtype == "fp8" and precision != "fp8":
                                 quality_retention *= 0.998
-                            if quality_retention < constraints.minimum_quality_retention:
+                            if (
+                                quality_retention
+                                < constraints.minimum_quality_retention
+                            ):
                                 continue
 
                             # 决定 batch 参数
-                            max_num_seqs = _decide_max_num_seqs(workload, pool.memory_gb)
-                            max_batched_tokens = _decide_batch_tokens(workload, max_num_seqs)
+                            max_num_seqs = _decide_max_num_seqs(
+                                workload, pool.memory_gb
+                            )
+                            max_batched_tokens = _decide_batch_tokens(
+                                workload, max_num_seqs
+                            )
 
                             # 决定上下文长度（用 P99 input + output）
                             context_len = int(
                                 min(
-                                    workload.input_tokens_p99 + workload.output_tokens_p99,
+                                    workload.input_tokens_p99
+                                    + workload.output_tokens_p99,
                                     model.max_model_len,
                                 )
                             )
@@ -140,7 +150,9 @@ def generate_candidates(
                             # 根据吞吐需求估算需要的 replica
                             # 简化：确保有足够 headroom
                             needed_replicas = _estimate_replicas(
-                                workload, max_num_seqs, constraints.minimum_capacity_headroom
+                                workload,
+                                max_num_seqs,
+                                constraints.minimum_capacity_headroom,
                             )
                             replicas = min(max(needed_replicas, 1), max_replicas)
 
@@ -148,20 +160,20 @@ def generate_candidates(
                             total_gpus = replicas * gpus_per_replica
                             if total_gpus > constraints.maximum_gpu_count:
                                 # 缩减 replica
-                                replicas = constraints.maximum_gpu_count // gpus_per_replica
+                                replicas = (
+                                    constraints.maximum_gpu_count // gpus_per_replica
+                                )
                                 if replicas < 1:
                                     continue
                                 total_gpus = replicas * gpus_per_replica
 
                             # Cache 决策
-                            enable_prefix_cache = (
-                                _decide_prefix_cache(workload)
-                                and backend.features.get("prefix_cache", False)
-                            )
-                            enable_chunked = (
-                                _decide_chunked_prefill(workload)
-                                and backend.features.get("chunked_prefill", False)
-                            )
+                            enable_prefix_cache = _decide_prefix_cache(
+                                workload
+                            ) and backend.features.get("prefix_cache", False)
+                            enable_chunked = _decide_chunked_prefill(
+                                workload
+                            ) and backend.features.get("chunked_prefill", False)
                             chunk_size = _decide_prefill_chunk_size(workload)
 
                             # 成本

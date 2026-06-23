@@ -17,6 +17,7 @@ OUTPUTS_DIR = Path(__file__).parent.parent / "outputs" / "test_e2e"
 def clean_outputs():
     """测试前清理输出目录."""
     import shutil
+
     if OUTPUTS_DIR.exists():
         shutil.rmtree(OUTPUTS_DIR)
     yield
@@ -58,9 +59,20 @@ class TestEndToEndScenario1:
 
         # 验证 report 包含关键章节
         report = (output / "decision_report.md").read_text()
-        for section in ["Workload", "Resource", "Recommended", "Score",
-                        "Memory", "Capacity", "Cost", "Rationale",
-                        "Alternative", "Confidence", "Assumption", "Verification"]:
+        for section in [
+            "Workload",
+            "Resource",
+            "Recommended",
+            "Score",
+            "Memory",
+            "Capacity",
+            "Cost",
+            "Rationale",
+            "Alternative",
+            "Confidence",
+            "Assumption",
+            "Verification",
+        ]:
             assert section.lower() in report.lower(), f"报告缺少章节: {section}"
 
     def test_reconcile_detects_slo_violation(self):

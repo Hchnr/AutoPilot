@@ -111,23 +111,39 @@ class TestMemoryEstimator:
     def test_concurrency_affects_memory(self, estimator):
         """验证: 增加并发 → 增加显存."""
         mem_low = estimator.total_memory_per_gpu(
-            precision="bf16", kv_dtype="auto", tp=4, pp=1,
-            max_num_seqs=16, context_length=4096,
+            precision="bf16",
+            kv_dtype="auto",
+            tp=4,
+            pp=1,
+            max_num_seqs=16,
+            context_length=4096,
         )
         mem_high = estimator.total_memory_per_gpu(
-            precision="bf16", kv_dtype="auto", tp=4, pp=1,
-            max_num_seqs=128, context_length=4096,
+            precision="bf16",
+            kv_dtype="auto",
+            tp=4,
+            pp=1,
+            max_num_seqs=128,
+            context_length=4096,
         )
         assert mem_high > mem_low
 
     def test_context_length_affects_memory(self, estimator):
         """验证: 增加上下文长度 → 增加显存."""
         mem_short = estimator.total_memory_per_gpu(
-            precision="bf16", kv_dtype="auto", tp=4, pp=1,
-            max_num_seqs=32, context_length=2048,
+            precision="bf16",
+            kv_dtype="auto",
+            tp=4,
+            pp=1,
+            max_num_seqs=32,
+            context_length=2048,
         )
         mem_long = estimator.total_memory_per_gpu(
-            precision="bf16", kv_dtype="auto", tp=4, pp=1,
-            max_num_seqs=32, context_length=16384,
+            precision="bf16",
+            kv_dtype="auto",
+            tp=4,
+            pp=1,
+            max_num_seqs=32,
+            context_length=16384,
         )
         assert mem_long > mem_short

@@ -29,7 +29,11 @@ def _compute_rps(records: list[TrafficRecord], window_ms: int = 60_000) -> dict:
     duration_s = (max_ts - min_ts) / 1000.0
 
     if duration_s <= 0:
-        return {"avg_rps": float(len(records)), "peak_rps": float(len(records)), "burst_ratio": 1.0}
+        return {
+            "avg_rps": float(len(records)),
+            "peak_rps": float(len(records)),
+            "burst_ratio": 1.0,
+        }
 
     avg_rps = len(records) / duration_s
 
@@ -47,10 +51,16 @@ def _compute_rps(records: list[TrafficRecord], window_ms: int = 60_000) -> dict:
     return {"avg_rps": avg_rps, "peak_rps": peak_rps, "burst_ratio": burst_ratio}
 
 
-def _compute_time_pattern(records: list[TrafficRecord], window_ms: int = 300_000) -> dict:
+def _compute_time_pattern(
+    records: list[TrafficRecord], window_ms: int = 300_000
+) -> dict:
     """检测流量时间模式（峰谷）."""
     if len(records) < 10:
-        return {"has_time_pattern": False, "peak_window_rps": 0.0, "valley_window_rps": 0.0}
+        return {
+            "has_time_pattern": False,
+            "peak_window_rps": 0.0,
+            "valley_window_rps": 0.0,
+        }
 
     timestamps = [r.timestamp_ms for r in records]
     min_ts = min(timestamps)
@@ -61,7 +71,11 @@ def _compute_time_pattern(records: list[TrafficRecord], window_ms: int = 300_000
         buckets[bucket_id] += 1
 
     if len(buckets) < 3:
-        return {"has_time_pattern": False, "peak_window_rps": 0.0, "valley_window_rps": 0.0}
+        return {
+            "has_time_pattern": False,
+            "peak_window_rps": 0.0,
+            "valley_window_rps": 0.0,
+        }
 
     window_s = window_ms / 1000.0
     rps_values = [count / window_s for count in buckets.values()]
@@ -104,7 +118,7 @@ def analyze_workload(records: list[TrafficRecord]) -> WorkloadSummary:
     avg_input = statistics.mean(input_tokens)
     avg_output = statistics.mean(output_tokens)
     # 假设处理时间约为 output_tokens * 20ms (decode) + input_tokens * 0.5ms (prefill)
-    estimated_processing_time_s = (avg_output * 0.02 + avg_input * 0.0005)
+    estimated_processing_time_s = avg_output * 0.02 + avg_input * 0.0005
     estimated_concurrency = rps_info["avg_rps"] * estimated_processing_time_s
 
     # Workload 分类

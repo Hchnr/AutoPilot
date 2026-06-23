@@ -18,7 +18,7 @@ from autopilot.loader import (
     load_telemetry,
     load_traffic,
 )
-from autopilot.models import DeploymentPlan, PlanResult, ReconcileResult
+from autopilot.models import PlanResult, ReconcileResult
 from autopilot.planner.candidate_generator import generate_candidates
 from autopilot.planner.scorer import score_and_rank
 from autopilot.reconciler.analyzer import analyze_telemetry

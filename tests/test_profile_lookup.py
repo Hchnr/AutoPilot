@@ -11,22 +11,34 @@ def profiles():
     return ProfilesConfig(
         profiles=[
             RuntimeProfile(
-                gpu_type="H800-80GB", backend="vllm", precision="bf16", tp=2,
+                gpu_type="H800-80GB",
+                backend="vllm",
+                precision="bf16",
+                tp=2,
                 maximum_prefill_tokens_per_second=13000,
                 maximum_decode_tokens_per_second=2000,
-                base_ttft_ms=200, base_itl_ms=22,
+                base_ttft_ms=200,
+                base_itl_ms=22,
             ),
             RuntimeProfile(
-                gpu_type="H800-80GB", backend="vllm", precision="bf16", tp=8,
+                gpu_type="H800-80GB",
+                backend="vllm",
+                precision="bf16",
+                tp=8,
                 maximum_prefill_tokens_per_second=40000,
                 maximum_decode_tokens_per_second=5000,
-                base_ttft_ms=180, base_itl_ms=20,
+                base_ttft_ms=180,
+                base_itl_ms=20,
             ),
             RuntimeProfile(
-                gpu_type="H800-80GB", backend="vllm", precision="fp8", tp=4,
+                gpu_type="H800-80GB",
+                backend="vllm",
+                precision="fp8",
+                tp=4,
                 maximum_prefill_tokens_per_second=30000,
                 maximum_decode_tokens_per_second=4200,
-                base_ttft_ms=130, base_itl_ms=16,
+                base_ttft_ms=130,
+                base_itl_ms=16,
             ),
         ]
     )

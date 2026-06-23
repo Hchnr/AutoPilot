@@ -11,11 +11,18 @@ from autopilot.reconciler.decision_engine import decide_actions
 @pytest.fixture
 def current_plan():
     return DeploymentPlan(
-        gpu_pool="h800", gpu_type="H800-80GB", backend="vllm",
-        replicas=2, tensor_parallel=4, pipeline_parallel=1,
-        precision="bf16", kv_cache_dtype="auto",
-        max_num_seqs=64, max_num_batched_tokens=8192,
-        enable_prefix_cache=True, enable_chunked_prefill=True,
+        gpu_pool="h800",
+        gpu_type="H800-80GB",
+        backend="vllm",
+        replicas=2,
+        tensor_parallel=4,
+        pipeline_parallel=1,
+        precision="bf16",
+        kv_cache_dtype="auto",
+        max_num_seqs=64,
+        max_num_batched_tokens=8192,
+        enable_prefix_cache=True,
+        enable_chunked_prefill=True,
     )
 
 
@@ -30,7 +37,7 @@ def _make_telemetry(
     """生成 telemetry 数据."""
     return [
         TelemetryRecord(
-            timestamp=f"2026-06-20T10:{i*5:02d}:00Z",
+            timestamp=f"2026-06-20T10:{i * 5:02d}:00Z",
             request_rate=10.0,
             queue_depth=5,
             p95_ttft_ms=ttft,
@@ -62,9 +69,12 @@ class TestReconciler:
         telemetry.append(
             TelemetryRecord(
                 timestamp="2026-06-20T10:20:00Z",
-                request_rate=10.0, queue_depth=5,
-                p95_ttft_ms=920, p95_itl_ms=30,
-                gpu_utilization=0.6, kv_cache_utilization=0.7,
+                request_rate=10.0,
+                queue_depth=5,
+                p95_ttft_ms=920,
+                p95_itl_ms=30,
+                gpu_utilization=0.6,
+                kv_cache_utilization=0.7,
             )
         )
         analysis = analyze_telemetry(telemetry)
@@ -78,7 +88,11 @@ class TestReconciler:
         analysis = analyze_telemetry(telemetry)
         actions = decide_actions(current_plan, telemetry, analysis)
         # 应该没有缩容操作
-        scale_downs = [a for a in actions if a.action == "scale_replicas" and a.to_value < current_plan.replicas]
+        scale_downs = [
+            a
+            for a in actions
+            if a.action == "scale_replicas" and a.to_value < current_plan.replicas
+        ]
         assert len(scale_downs) == 0
 
     def test_sustained_low_util_scales_down(self, current_plan):
@@ -86,7 +100,11 @@ class TestReconciler:
         telemetry = _make_telemetry(count=6, gpu_util=0.15)
         analysis = analyze_telemetry(telemetry)
         actions = decide_actions(current_plan, telemetry, analysis)
-        scale_downs = [a for a in actions if a.action == "scale_replicas" and a.to_value < current_plan.replicas]
+        scale_downs = [
+            a
+            for a in actions
+            if a.action == "scale_replicas" and a.to_value < current_plan.replicas
+        ]
         assert len(scale_downs) > 0
 
     def test_oom_triggers_reduction(self, current_plan):
@@ -107,7 +125,9 @@ class TestReconciler:
 
     def test_healthy_system_no_action(self, current_plan):
         """验证: 正常运行不产生操作."""
-        telemetry = _make_telemetry(count=5, ttft=500, itl=30, gpu_util=0.6, kv_util=0.7)
+        telemetry = _make_telemetry(
+            count=5, ttft=500, itl=30, gpu_util=0.6, kv_util=0.7
+        )
         analysis = analyze_telemetry(telemetry)
         actions = decide_actions(current_plan, telemetry, analysis)
         assert len(actions) == 0
@@ -148,7 +168,11 @@ class TestReconciler:
         telemetry = _make_telemetry(count=4, gpu_util=0.15)
         analysis = analyze_telemetry(telemetry)
         actions = decide_actions(current_plan, telemetry, analysis)
-        scale_downs = [a for a in actions if a.action == "scale_replicas" and a.to_value < current_plan.replicas]
+        scale_downs = [
+            a
+            for a in actions
+            if a.action == "scale_replicas" and a.to_value < current_plan.replicas
+        ]
         assert len(scale_downs) == 0
 
     def test_five_windows_low_util_triggers_scale_down(self, current_plan):
@@ -156,7 +180,11 @@ class TestReconciler:
         telemetry = _make_telemetry(count=5, gpu_util=0.15)
         analysis = analyze_telemetry(telemetry)
         actions = decide_actions(current_plan, telemetry, analysis)
-        scale_downs = [a for a in actions if a.action == "scale_replicas" and a.to_value < current_plan.replicas]
+        scale_downs = [
+            a
+            for a in actions
+            if a.action == "scale_replicas" and a.to_value < current_plan.replicas
+        ]
         assert len(scale_downs) > 0
 
     def test_interrupted_violation_resets_counter(self, current_plan):
@@ -166,16 +194,25 @@ class TestReconciler:
             *_make_telemetry(count=2, ttft=920),
             TelemetryRecord(
                 timestamp="2026-06-20T10:10:00Z",
-                request_rate=10.0, queue_depth=5,
-                p95_ttft_ms=500, p95_itl_ms=30,  # 正常
-                gpu_utilization=0.6, kv_cache_utilization=0.7,
+                request_rate=10.0,
+                queue_depth=5,
+                p95_ttft_ms=500,
+                p95_itl_ms=30,  # 正常
+                gpu_utilization=0.6,
+                kv_cache_utilization=0.7,
             ),
-            *[TelemetryRecord(
-                timestamp=f"2026-06-20T10:{15+i*5}:00Z",
-                request_rate=10.0, queue_depth=5,
-                p95_ttft_ms=920, p95_itl_ms=30,
-                gpu_utilization=0.6, kv_cache_utilization=0.7,
-            ) for i in range(2)],
+            *[
+                TelemetryRecord(
+                    timestamp=f"2026-06-20T10:{15 + i * 5}:00Z",
+                    request_rate=10.0,
+                    queue_depth=5,
+                    p95_ttft_ms=920,
+                    p95_itl_ms=30,
+                    gpu_utilization=0.6,
+                    kv_cache_utilization=0.7,
+                )
+                for i in range(2)
+            ],
         ]
         analysis = analyze_telemetry(telemetry)
         actions = decide_actions(current_plan, telemetry, analysis)

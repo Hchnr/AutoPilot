@@ -151,9 +151,19 @@ def score_and_rank(
 
         # 权重取决于优化目标
         if slo.objective.primary == "minimize_hourly_cost":
-            score = cost_score * 0.5 + headroom_score * 0.2 + latency_score * 0.2 + confidence * 0.1
+            score = (
+                cost_score * 0.5
+                + headroom_score * 0.2
+                + latency_score * 0.2
+                + confidence * 0.1
+            )
         else:  # maximize_goodput
-            score = latency_score * 0.4 + headroom_score * 0.3 + cost_score * 0.2 + confidence * 0.1
+            score = (
+                latency_score * 0.4
+                + headroom_score * 0.3
+                + cost_score * 0.2
+                + confidence * 0.1
+            )
 
         plan.score = score
 
@@ -174,7 +184,9 @@ def _generate_rationale(
     rationale = {}
 
     # TP 选择
-    rationale["tp"] = f"TP={plan.tensor_parallel}，将模型切分到 {plan.tensor_parallel} 张 GPU，减少单卡显存压力"
+    rationale["tp"] = (
+        f"TP={plan.tensor_parallel}，将模型切分到 {plan.tensor_parallel} 张 GPU，减少单卡显存压力"
+    )
     if plan.tensor_parallel > 2:
         gpu_pool = next((p for p in cluster.gpu_pools if p.id == plan.gpu_pool), None)
         if gpu_pool and gpu_pool.topology == "nvlink":
@@ -182,7 +194,9 @@ def _generate_rationale(
 
     # PP 选择
     if plan.pipeline_parallel > 1:
-        rationale["pp"] = f"PP={plan.pipeline_parallel}，模型层数多({plan.pipeline_parallel}路流水)，进一步降低单卡显存"
+        rationale["pp"] = (
+            f"PP={plan.pipeline_parallel}，模型层数多({plan.pipeline_parallel}路流水)，进一步降低单卡显存"
+        )
     else:
         rationale["pp"] = "PP=1，模型规模在 TP 切分后单卡可容纳，无需流水线"
 

@@ -46,7 +46,9 @@ class ProfileLookup:
         # 2. 同 GPU + 后端 + 精度，不同 TP → 插值
         interpolated = self._interpolate_tp(gpu_type, backend, precision, tp)
         if interpolated:
-            return ProfileLookupResult(interpolated, source="interpolated", confidence=0.7)
+            return ProfileLookupResult(
+                interpolated, source="interpolated", confidence=0.7
+            )
 
         # 3. 同代 GPU 缩放（简化：取同后端+精度+tp 的任意 GPU profile，按算力比缩放）
         scaled = self._scale_gpu(gpu_type, backend, precision, tp)
@@ -77,7 +79,9 @@ class ProfileLookup:
         same_config = [
             p
             for p in self.profiles
-            if p.gpu_type == gpu_type and p.backend == backend and p.precision == precision
+            if p.gpu_type == gpu_type
+            and p.backend == backend
+            and p.precision == precision
         ]
         if len(same_config) < 2:
             return None
@@ -108,11 +112,19 @@ class ProfileLookup:
             tp=tp,
             maximum_prefill_tokens_per_second=(
                 lower.maximum_prefill_tokens_per_second
-                + ratio * (upper.maximum_prefill_tokens_per_second - lower.maximum_prefill_tokens_per_second)
+                + ratio
+                * (
+                    upper.maximum_prefill_tokens_per_second
+                    - lower.maximum_prefill_tokens_per_second
+                )
             ),
             maximum_decode_tokens_per_second=(
                 lower.maximum_decode_tokens_per_second
-                + ratio * (upper.maximum_decode_tokens_per_second - lower.maximum_decode_tokens_per_second)
+                + ratio
+                * (
+                    upper.maximum_decode_tokens_per_second
+                    - lower.maximum_decode_tokens_per_second
+                )
             ),
             base_ttft_ms=(
                 lower.base_ttft_ms + ratio * (upper.base_ttft_ms - lower.base_ttft_ms)
@@ -122,7 +134,8 @@ class ProfileLookup:
             ),
             runtime_memory_overhead_gb=(
                 lower.runtime_memory_overhead_gb
-                + ratio * (upper.runtime_memory_overhead_gb - lower.runtime_memory_overhead_gb)
+                + ratio
+                * (upper.runtime_memory_overhead_gb - lower.runtime_memory_overhead_gb)
             ),
             communication_penalty=lower.communication_penalty,
         )
@@ -136,9 +149,11 @@ class ProfileLookup:
             precision=base.precision,
             tp=target_tp,
             # TP 增大 → prefill 吞吐近似线性增长
-            maximum_prefill_tokens_per_second=base.maximum_prefill_tokens_per_second * tp_ratio,
+            maximum_prefill_tokens_per_second=base.maximum_prefill_tokens_per_second
+            * tp_ratio,
             # TP 增大 → decode 吞吐增长但受通信开销限制，用 0.8 系数
-            maximum_decode_tokens_per_second=base.maximum_decode_tokens_per_second * (tp_ratio ** 0.8),
+            maximum_decode_tokens_per_second=base.maximum_decode_tokens_per_second
+            * (tp_ratio**0.8),
             # TP 增大 → 延迟略有增加（通信开销）
             base_ttft_ms=base.base_ttft_ms * (1 + 0.05 * (target_tp - base.tp)),
             base_itl_ms=base.base_itl_ms * (1 + 0.03 * (target_tp - base.tp)),
@@ -172,8 +187,10 @@ class ProfileLookup:
             backend=backend,
             precision=precision,
             tp=tp,
-            maximum_prefill_tokens_per_second=base.maximum_prefill_tokens_per_second * 0.8,
-            maximum_decode_tokens_per_second=base.maximum_decode_tokens_per_second * 0.8,
+            maximum_prefill_tokens_per_second=base.maximum_prefill_tokens_per_second
+            * 0.8,
+            maximum_decode_tokens_per_second=base.maximum_decode_tokens_per_second
+            * 0.8,
             base_ttft_ms=base.base_ttft_ms * 1.2,
             base_itl_ms=base.base_itl_ms * 1.2,
             runtime_memory_overhead_gb=base.runtime_memory_overhead_gb,

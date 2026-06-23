@@ -1,6 +1,5 @@
 """防震荡安全机制测试."""
 
-import pytest
 
 from autopilot.models.telemetry import ReconcileAction
 from autopilot.reconciler.safeguards import SafeguardEngine
@@ -56,7 +55,9 @@ class TestSafeguards:
 
     def test_single_action_per_cycle(self):
         """验证: 每个周期只允许一个操作."""
-        engine = SafeguardEngine(cooldown_windows=3, last_action_window=None, current_window=10)
+        engine = SafeguardEngine(
+            cooldown_windows=3, last_action_window=None, current_window=10
+        )
         action1 = _make_action(action="scale_replicas")
         action2 = _make_action(action="adjust_max_num_seqs")
         assert engine.is_allowed(action1) is True
@@ -64,7 +65,9 @@ class TestSafeguards:
 
     def test_high_risk_flagged(self):
         """验证: 高风险操作被标记."""
-        engine = SafeguardEngine(cooldown_windows=3, last_action_window=None, current_window=10)
+        engine = SafeguardEngine(
+            cooldown_windows=3, last_action_window=None, current_window=10
+        )
         action = _make_action(action="change_tp")
         engine.is_allowed(action)
         assert action.risk_level == "high"
@@ -72,7 +75,9 @@ class TestSafeguards:
 
     def test_scale_replicas_low_risk(self):
         """验证: scale_replicas 是低风险."""
-        engine = SafeguardEngine(cooldown_windows=3, last_action_window=None, current_window=10)
+        engine = SafeguardEngine(
+            cooldown_windows=3, last_action_window=None, current_window=10
+        )
         action = _make_action(action="scale_replicas")
         engine.is_allowed(action)
         assert action.risk_level == "low"
