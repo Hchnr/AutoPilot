@@ -1,0 +1,4 @@
+{"timestamp": "2026-06-20T14:00:00Z", "request_rate": 5.0, "queue_depth": 3, "p95_ttft_ms": 300, "p95_itl_ms": 25, "gpu_utilization": 0.65, "kv_cache_utilization": 0.7, "oom_count": 0, "error_rate": 0.0}
+{"timestamp": "2026-06-20T14:05:00Z", "request_rate": 5.5, "queue_depth": 4, "p95_ttft_ms": 320, "p95_itl_ms": 26, "gpu_utilization": 0.68, "kv_cache_utilization": 0.73, "oom_count": 0, "error_rate": 0.0}
+{"timestamp": "2026-06-20T14:10:00Z", "request_rate": 5.2, "queue_depth": 3, "p95_ttft_ms": 310, "p95_itl_ms": 25, "gpu_utilization": 0.66, "kv_cache_utilization": 0.71, "oom_count": 0, "error_rate": 0.0}
+{"timestamp": "2026-06-20T14:15:00Z", "request_rate": 5.0, "queue_depth": 3, "p95_ttft_ms": 290, "p95_itl_ms": 24, "gpu_utilization": 0.64, "kv_cache_utilization": 0.69, "oom_count": 0, "error_rate": 0.0}

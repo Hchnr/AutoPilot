@@ -1,0 +1,11 @@
+objective:
+  primary: minimize_hourly_cost
+  secondary: maximize_goodput
+
+constraints:
+  p95_ttft_ms: 800
+  p95_itl_ms: 45
+  p99_e2e_ms: 8000
+  minimum_quality_retention: 0.99
+  minimum_capacity_headroom: 0.20
+  maximum_gpu_count: 8

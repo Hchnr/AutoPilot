@@ -1,0 +1,14 @@
+gpu_pools:
+  - id: h800-sxm
+    gpu_type: H800-80GB
+    count: 8
+    memory_gb: 80
+    topology: nvlink
+    hourly_cost_per_gpu: 3.5
+
+  - id: l40s-pcie
+    gpu_type: L40S-48GB
+    count: 16
+    memory_gb: 48
+    topology: pcie
+    hourly_cost_per_gpu: 1.5

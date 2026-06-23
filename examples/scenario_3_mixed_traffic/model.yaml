@@ -1,0 +1,15 @@
+name: qwen3-32b
+architecture: decoder_only
+
+parameter_count: "32B"
+num_layers: 64
+hidden_size: 5120
+num_attention_heads: 40
+num_kv_heads: 8
+
+supported_precisions:
+  - bf16
+  - fp8
+
+max_model_len: 32768
+minimum_quality_retention: 0.99

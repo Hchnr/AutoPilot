@@ -1,0 +1,42 @@
+backends:
+  vllm:
+    version: ">=0.6.0"
+    supported_precisions:
+      - bf16
+      - fp8
+    supported_kv_cache_dtypes:
+      - auto
+      - fp8
+    tp_values: [1, 2, 4, 8]
+    pp_values: [1, 2]
+    features:
+      prefix_cache: true
+      chunked_prefill: true
+      cuda_graph: true
+    constraints:
+      - "tp * pp <= gpu_count"
+      - "fp8 requires gpu_arch >= sm_89"
+    default_args:
+      enable-chunked-prefill: true
+      disable-log-requests: true
+
+  sglang:
+    version: ">=0.4.0"
+    supported_precisions:
+      - bf16
+      - fp8
+    supported_kv_cache_dtypes:
+      - auto
+      - fp8
+    tp_values: [1, 2, 4, 8]
+    pp_values: [1]
+    features:
+      prefix_cache: true
+      chunked_prefill: true
+      cuda_graph: true
+    constraints:
+      - "tp <= gpu_count"
+      - "pp == 1"
+      - "fp8 requires gpu_arch >= sm_89"
+    default_args:
+      chunked-prefill-size: 8192

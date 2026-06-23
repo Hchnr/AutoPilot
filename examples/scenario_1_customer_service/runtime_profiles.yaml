@@ -1,0 +1,65 @@
+profiles:
+  - gpu_type: H800-80GB
+    backend: vllm
+    precision: bf16
+    tp: 4
+    maximum_prefill_tokens_per_second: 24000
+    maximum_decode_tokens_per_second: 3600
+    base_ttft_ms: 150
+    base_itl_ms: 18
+    runtime_memory_overhead_gb: 7
+    communication_penalty:
+      nvlink: 1.0
+      pcie: 1.35
+
+  - gpu_type: H800-80GB
+    backend: vllm
+    precision: fp8
+    tp: 4
+    maximum_prefill_tokens_per_second: 30000
+    maximum_decode_tokens_per_second: 4200
+    base_ttft_ms: 130
+    base_itl_ms: 16
+    runtime_memory_overhead_gb: 6
+    communication_penalty:
+      nvlink: 1.0
+      pcie: 1.35
+
+  - gpu_type: H800-80GB
+    backend: vllm
+    precision: bf16
+    tp: 2
+    maximum_prefill_tokens_per_second: 13000
+    maximum_decode_tokens_per_second: 2000
+    base_ttft_ms: 200
+    base_itl_ms: 22
+    runtime_memory_overhead_gb: 7
+    communication_penalty:
+      nvlink: 1.0
+      pcie: 1.35
+
+  - gpu_type: H800-80GB
+    backend: sglang
+    precision: bf16
+    tp: 4
+    maximum_prefill_tokens_per_second: 25000
+    maximum_decode_tokens_per_second: 3800
+    base_ttft_ms: 140
+    base_itl_ms: 17
+    runtime_memory_overhead_gb: 6.5
+    communication_penalty:
+      nvlink: 1.0
+      pcie: 1.30
+
+  - gpu_type: L40S-48GB
+    backend: vllm
+    precision: fp8
+    tp: 4
+    maximum_prefill_tokens_per_second: 15000
+    maximum_decode_tokens_per_second: 2200
+    base_ttft_ms: 250
+    base_itl_ms: 28
+    runtime_memory_overhead_gb: 5
+    communication_penalty:
+      nvlink: 1.0
+      pcie: 1.40
