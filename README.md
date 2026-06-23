@@ -200,10 +200,67 @@ pytest tests/ -v --cov=autopilot
 
 覆盖范围：配置合法性、GPU 约束、显存估算、TP/PP/Replica 资源计算、SLO 判断、方案排序、Profile 降级、连续窗口判断、Cooldown 防震荡、高风险操作识别。
 
-包含三个端到端场景：
-- 场景一：客服 Chat（高 prefix 复用、TTFT 敏感）
-- 场景二：长文本生成（decode 密集、低 prefix 复用）
-- 场景三：混合流量（Chat + RAG + 长文本、成本敏感）
+### 端到端场景命令
+
+**场景一：客服 Chat**（高 prefix 复用、TTFT 敏感）
+
+```bash
+# Plan
+autopilot plan \
+  --model examples/scenario_1_customer_service/model.yaml \
+  --cluster examples/scenario_1_customer_service/cluster.yaml \
+  --backends examples/scenario_1_customer_service/backends.yaml \
+  --traffic examples/scenario_1_customer_service/traffic.jsonl \
+  --profiles examples/scenario_1_customer_service/runtime_profiles.yaml \
+  --slo examples/scenario_1_customer_service/slo.yaml \
+  --output outputs/scenario_1/plan/
+
+# Reconcile
+autopilot reconcile \
+  --plan outputs/scenario_1/plan/deployment_plan.yaml \
+  --telemetry examples/scenario_1_customer_service/telemetry.jsonl \
+  --output outputs/scenario_1/reconcile/
+```
+
+**场景二：长文本生成**（decode 密集、低 prefix 复用）
+
+```bash
+# Plan
+autopilot plan \
+  --model examples/scenario_2_long_generation/model.yaml \
+  --cluster examples/scenario_2_long_generation/cluster.yaml \
+  --backends examples/scenario_2_long_generation/backends.yaml \
+  --traffic examples/scenario_2_long_generation/traffic.jsonl \
+  --profiles examples/scenario_2_long_generation/runtime_profiles.yaml \
+  --slo examples/scenario_2_long_generation/slo.yaml \
+  --output outputs/scenario_2/plan/
+
+# Reconcile
+autopilot reconcile \
+  --plan outputs/scenario_2/plan/deployment_plan.yaml \
+  --telemetry examples/scenario_2_long_generation/telemetry.jsonl \
+  --output outputs/scenario_2/reconcile/
+```
+
+**场景三：混合流量**（Chat + RAG + 长文本、成本敏感）
+
+```bash
+# Plan
+autopilot plan \
+  --model examples/scenario_3_mixed_traffic/model.yaml \
+  --cluster examples/scenario_3_mixed_traffic/cluster.yaml \
+  --backends examples/scenario_3_mixed_traffic/backends.yaml \
+  --traffic examples/scenario_3_mixed_traffic/traffic.jsonl \
+  --profiles examples/scenario_3_mixed_traffic/runtime_profiles.yaml \
+  --slo examples/scenario_3_mixed_traffic/slo.yaml \
+  --output outputs/scenario_3/plan/
+
+# Reconcile
+autopilot reconcile \
+  --plan outputs/scenario_3/plan/deployment_plan.yaml \
+  --telemetry examples/scenario_3_mixed_traffic/telemetry.jsonl \
+  --output outputs/scenario_3/reconcile/
+```
 
 详见：[docs/testing.md](docs/testing.md)
 
